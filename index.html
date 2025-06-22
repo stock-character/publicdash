@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pico Rivera Financial & Budget Dashboard</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for interactive graphs and charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Custom styles for financial cards */
+        .financial-card {
+            @apply bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center text-center transition-transform duration-300 hover:scale-105;
+        }
+
+        /* Styling for progress bars for Budget vs. Actual */
+        .progress-bar-container {
+            @apply w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700;
+        }
+        .progress-bar-fill {
+            @apply bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out;
+        }
+        /* Make list items clickable and indicate it */
+        .clickable-list-item {
+            cursor: pointer;
+            @apply hover:bg-blue-100 transition-colors duration-200;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-lg p-6 md:p-8 rounded-b-3xl">
+        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <!-- City Logo Placeholder -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/13/Seal_of_Pico_Rivera%2C_California.svg" alt="Pico Rivera Logo" style="width:60px;height:60px;" class="rounded-full shadow-md">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-700">Pico Rivera Budget-in-Brief</h1>
+            </div>
+            <nav class="space-x-4 md:space-x-6 text-sm md:text-base font-medium">
+                <a href="#summary" class="text-blue-600 hover:text-blue-800 transition duration-300">Summary</a>
+                <a href="#revenue" class="text-blue-600 hover:text-blue-800 transition duration-300">Revenue</a>
+                <a href="#expenditures" class="text-blue-600 hover:text-blue-800 transition duration-300">Expenditures</a>
+                <a href="#budget-vs-actual" class="text-blue-600 hover:text-blue-800 transition duration-300">Budget vs. Actual</a>
+                <a href="#historical" id="historicalDataBtn" class="text-blue-600 hover:text-blue-800 transition duration-300">Historical Data</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="mainContent" class="container mx-auto p-4 md:p-8 flex-grow">
+        
+        <!-- Fiscal Year Progress Gauge Section -->
+        <section id="fiscalYearGauge" class="bg-white p-6 rounded-2xl shadow-xl mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-4 text-center">Fiscal Year 2025-26 Progress</h2>
+             <div class="relative h-48 flex justify-center items-center">
+                <canvas id="fiscalYearChart"></canvas>
+            </div>
+        </section>
+
+
+        <!-- Financial Summary Section -->
+        <section id="summary" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="financial-card">
+                <h2 class="text-xl font-semibold text-blue-600 mb-2">General Fund Total Revenue</h2>
+                <p id="totalRevenue" class="text-4xl font-bold text-green-700">$XX,XXX,XXX</p>
+                <p class="text-sm text-gray-500 mt-2">Fiscal Year 2025-26</p>
+            </div>
+            <div class="financial-card">
+                <h2 class="text-xl font-semibold text-blue-600 mb-2">Total Approved Expenditures</h2>
+                <p id="totalExpenditures" class="text-4xl font-bold text-red-700">$XX,XXX,XXX</p>
+                <p class="text-sm text-gray-500 mt-2">Fiscal Year 2025-26</p>
+            </div>
+            <div class="financial-card">
+                <h2 class="text-xl font-semibold text-blue-600 mb-2">Fund Balance</h2>
+                <p id="fundBalance" class="text-4xl font-bold text-blue-700">$X,XXX,XXX</p>
+                <p class="text-sm text-gray-500 mt-2">As of July 1, 2025</p>
+            </div>
+        </section>
+
+        <!-- Revenue Overview Section -->
+        <section id="revenue" class="bg-white p-6 rounded-2xl shadow-xl mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">General Fund Revenue Overview <span class="text-base text-gray-500 ml-2">(Click for details)</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div id="revenueList" class="space-y-4">
+                    <!-- Revenue items will be loaded here by JavaScript -->
+                    <p class="text-gray-600">Loading revenue data...</p>
+                </div>
+                <div class="flex justify-center items-center">
+                    <canvas id="revenueChart" class="max-w-xs md:max-w-sm"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expenditures Overview Section -->
+        <section id="expenditures" class="bg-white p-6 rounded-2xl shadow-xl mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">Approved Expenditures Overview <span class="text-base text-gray-500 ml-2">(Click for details)</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div id="expendituresList" class="space-y-4">
+                    <!-- Expenditure items will be loaded here by JavaScript -->
+                    <p class="text-gray-600">Loading expenditure data...</p>
+                </div>
+                <div class="flex justify-center items-center">
+                    <canvas id="expenditureChart" class="max-w-xs md:max-w-sm"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Budget vs. Actual Section -->
+        <section id="budget-vs-actual" class="bg-white p-6 rounded-2xl shadow-xl mb-8">
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">Budget vs. Actual (FY 2024)</h2>
+            <div id="budgetActualList" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Budget vs. Actual items will be loaded here by JavaScript -->
+                <p class="text-gray-600">Loading budget vs. actual data...</p>
+            </div>
+            <div class="flex justify-center items-center">
+                <canvas id="budgetActualChart" class="max-w-full h-80"></canvas>
+            </div>
+        </section>
+
+        <!-- Detailed Revenue Section (initially hidden) -->
+        <section id="detailedRevenueSection" class="bg-white p-6 rounded-2xl shadow-xl mb-8 hidden">
+            <button id="backToDashboardBtnRevenue" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-md hover:bg-gray-300 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 mb-6">
+                &larr; Back to Dashboard
+            </button>
+            <h2 id="detailedRevenueTitle" class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3"></h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr class="bg-blue-100 text-blue-800 text-left">
+                            <th class="py-3 px-4 rounded-tl-lg">Description</th>
+                            <th class="py-3 px-4">Object</th>
+                            <th class="py-3 px-4 rounded-tr-lg text-right">Approved</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailedRevenueTableBody"></tbody>
+                    <tfoot>
+                        <tr class="bg-blue-50 font-bold text-blue-800">
+                            <td class="py-3 px-4 rounded-bl-lg">Total</td>
+                            <td class="py-3 px-4"></td>
+                            <td id="detailedRevenueTotalAmount" class="py-3 px-4 rounded-br-lg text-right"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Detailed Expenditures Section (initially hidden) -->
+        <section id="detailedExpendituresSection" class="bg-white p-6 rounded-2xl shadow-xl mb-8 hidden">
+            <button id="backToDashboardBtnExpenditure" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-md hover:bg-gray-300 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 mb-6">
+                &larr; Back to Dashboard
+            </button>
+            <h2 id="detailedExpenditureTitle" class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3"></h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr class="bg-blue-100 text-blue-800 text-left">
+                            <th class="py-3 px-4 rounded-tl-lg">Description</th>
+                            <th class="py-3 px-4">Div-Object</th>
+                            <th class="py-3 px-4 rounded-tr-lg text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailedExpendituresTableBody"></tbody>
+                    <tfoot>
+                        <tr class="bg-blue-50 font-bold text-blue-800">
+                            <td class="py-3 px-4 rounded-bl-lg">Total</td>
+                            <td class="py-3 px-4"></td>
+                            <td id="detailedTotalAmount" class="py-3 px-4 rounded-br-lg text-right"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Historical Data Section (initially hidden) -->
+        <section id="historicalDataSection" class="bg-white p-6 rounded-2xl shadow-xl mb-8 hidden">
+            <button id="backToDashboardBtnHistorical" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg shadow-md hover:bg-gray-300 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 mb-6">
+                &larr; Back to Dashboard
+            </button>
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">Historical General Fund Performance</h2>
+            <div class="relative h-96">
+                <canvas id="historicalChart"></canvas>
+            </div>
+             <!-- Sales Tax Chart -->
+            <div class="relative h-96 mt-12 pt-8 border-t-2 border-blue-200">
+                <canvas id="salesTaxChart"></canvas>
+            </div>
+            <!-- Property Tax Chart -->
+            <div class="relative h-96 mt-12 pt-8 border-t-2 border-blue-200">
+                <canvas id="propertyTaxChart"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-blue-800 text-white p-6 md:p-8 mt-8 rounded-t-3xl">
+        <div class="container mx-auto text-center text-sm md:text-base">
+            <p>&copy; <span id="currentYear"></span> City of Pico Rivera. Financial Dashboard.</p>
+            <p class="mt-2">Data updated Weekly. For official reports, please visit pico-rivera.org.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current year in footer
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Helper function to format currency
+            const formatCurrency = (amount) => {
+                if (amount === null || amount === undefined) return 'N/A';
+                // Use accounting style for negative numbers in parentheses
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    currencySign: 'accounting', // This will handle parentheses for negative numbers
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount);
+            };
+
+            // --- Financial Data ---
+            const financialData = {
+                totalRevenue: 63415969,
+                totalExpenditures: 63415969,
+                fundBalance: 63415969,
+                revenueSources: [
+                    { name: "Taxes and Franchises", amount: 48972930, percentage: 77.22 },
+                    { name: "Licenses and Permits", amount: 7441208, percentage: 11.73 },
+                    { name: "Fines and Forfeitures", amount: 1369100, percentage: 2.16 },
+                    { name: "Use of Money and Property", amount: 2011373, percentage: 3.17 },
+                    { name: "Charges for Services", amount: 693451, percentage: 1.09 },
+                    { name: "Other Revenue", amount: 418828, percentage: 0.66 },
+                    { name: "Intergovernmental Revenue", amount: 774804, percentage: 1.22 },
+                    { name: "Non-Operating Transfers In", amount: 1734275, percentage: 2.73 }
+                ],
+                expenditureCategories: [
+                    { name: "Administration", amount: 3797287, percentage: 5.99 },
+                    { name: "Public Safety", amount: 16159285, percentage: 25.48 },
+                    { name: "Community and Economic Development", amount: 7415324, percentage: 11.69 },
+                    { name: "Human Resources", amount: 1342464, percentage: 2.12 },
+                    { name: "Parks and Recreation", amount: 8286288, percentage: 13.07 },
+                    { name: "Public Works", amount: 11744927, percentage: 18.52 },
+                    { name: "Administrative Services", amount: 2565743, percentage: 4.05 },
+                    { name: "Non-Departmental", amount: 8039651, percentage: 12.68 },
+                    { name: "Transfers Out", amount: 4065000, percentage: 6.41 }
+                ],
+                budgetVsActual: [
+                    { category: "Administration", budget: 3797287, actual: 3797287 },
+                    { category: "Public Safety", budget: 15169096, actual: 15017405 },
+                    { category: "Community and Economic Development", budget: 7250185, actual: 7322687 },
+                    { category: "Human Resources", budget: 1307992, actual: 1268752 },
+                    { category: "Parks and Recreation", budget: 7752251, actual: 7907296 },
+                    { category: "Public Works", budget: 11263686, actual: 10700502 },
+                    { category: "Administrative Services", budget: 10468883, actual: 10416538 },
+                    { category: "Non-Departmental", budget: 7009639, actual: 7009639 }
+                ]
+            };
+            const detailedRevenue = {
+                "Taxes and Franchises": [
+                    { item: "Sales and Use Taxes", account: "40100", amount: 13733107 },
+                    { item: "Sales and Use Taxes - Measure P", account: "40101", amount: 13254498 },
+                    { item: "Sales Tax Revenue Contra Account", account: "40102", amount: -43330 },
+                    { item: "Franchise Tax", account: "40200", amount: 1025570 },
+                    { item: "Property Transfer Tax", account: "40400", amount: 194005 },
+                    { item: "Transient Occupancy Tax", account: "40500", amount: 457512 },
+                    { item: "Utility Users Tax", account: "40700", amount: 4262741 },
+                    { item: "Rubbish Franchise Fee", account: "40800", amount: 1110100 },
+                    { item: "Property Tax-In Lieu of VLF", account: "44200", amount: 10754346 },
+                    { item: "Property Tax-AB. 1197 Allocation", account: "45400", amount: 4224381 }
+                ],
+                "Licenses and Permits": [
+                    { item: "Cert. of Occupancy Permits", account: "41000", amount: 22709 }, 
+                    { item: "Business License Tax", account: "41100", amount: 4788000 }, 
+                    { item: "Business License Tax - Delinquent", account: "41101", amount: 850 }, 
+                    { item: "Business License Tax Processing Fee", account: "41105", amount: 100717 }, 
+                    { item: "Discovered Business License Process", account: "41106", amount: -94569 }, 
+                    { item: "Business License Late Fee", account: "41110", amount: 204249 }, 
+                    { item: "Business License Delinquent Fee", account: "41111", amount: 196 },
+                    { item: "SB1186 Fee", account: "41115", amount: 9116 }, 
+                    { item: "Home Occupation - Planning Review", account: "41120", amount: 1000 }, 
+                    { item: "Tobacco Retail License", account: "41130", amount: 20800},
+                    { item: "Regulatory Permit", account: "41200", amount: 9180 }, 
+                    { item: "Building Permits", account: "41300", amount: 750000 }, 
+                    { item: "General Plan Maintenance Fee", account: "41315", amount: 13000},
+                    { item: "Automated Permit System", account: "41350", amount: 4000 }, 
+                    { item: "Plumbing Permits", account: "41400", amount: 75000 }, 
+                    { item: "Electrical Permits", account: "41100", amount: 190000 }, 
+                    { item: "Heating Air Cond Permit", account: "41700", amount: 50000 }, 
+                    { item: "Dog License", account: "41800", amount: 180000 }, 
+                    { item: "Other License and Permits", account: "41900", amount: 150000 }, 
+                    { item: "Plan Check Fees", account: "42000", amount: 650000 }, 
+                    { item: "Storm Drain Revenue", account: "42300", amount: 116204 }, 
+                    { item: "Zoning and Planning Fees", account: "46100", amount: 175000 }, 
+                    { item: "Residential Parking Permit", account: "46350", amount: 5755 }
+                ],
+                "Fines and Forfeitures": [
+                    { item: "Administrative Citation", account: "42050", amount: 85000 }, 
+                    { item: "Vehicle Code Fines", account: "42100", amount: 75000 }, 
+                    { item: "Other Court Fines", account: "42200", amount: 1200000 },
+                    { item: "Fines & Violations - Fireworks", account: "42250", amount: 9100}
+                ],
+                "Use of Money and Property": [
+                    { item: "Interest Income", account: "43100", amount: 1938900 }, 
+                    { item: "Investment Fair Value Gain (Loss)", account: "43116", amount: 63200},
+                    { item: "Rents and Concessions", account: "43200", amount: 9273 }
+                ],
+                "Charges for Services": [
+                    { item: "Record Retention Surcharge", account: "42010", amount: 3435 },
+                    { item: "Parks and Rec - Special Events", account: "46504", amount: 35000 },
+                    { item: "Parks and Rec - Youth Sports", account: "46508", amount: 65000 },
+                    { item: "Parks and Rec - Adult Sports", account: "46509", amount: 30000 },
+                    { item: "Parks and Rec - Contract Programs", account: "46510", amount: 125000 },
+                    { item: "Parks and Rec - Fees and Programs", account: "46511", amount: 2000},
+                    { item: "Parks and Rec - Field and Facility Rentals", account: "46512", amount: 120000},
+                    { item: "Parks and Rec - Batting Cages", account: "46513", amount: 850 },
+                    { item: "Parks and Rec - Teen Services", account: "46514", amount: 200 },
+                    { item: "Parks and Rec - Go Getters Program", account: "46520", amount: 2500 },
+                    { item: "Parks and Rec - Trips and Tours", account: "46601", amount: 50000 },
+                    { item: "Parks and Rec - Senior Center", account: "46602", amount: 25000 },
+                    { item: "Parks and Rec - Business, Family Engage", account: "46603", amount: 2500 },
+                    { item: "Parks and Rec - Community Garden", account: "46605", amount: 1000 },
+                    { item: "Parks and Rec - Camps", account: "46607", amount: 135000 },
+                    { item: "Reproduction Charges", account: "46900", amount: 266 },
+                    { item: "Technology Surcharge", account: "48835", amount: 68474 },
+                    { item: "Training Surcharge", account: "48836", amount: 13253 },
+                    { item: "Current Service Charges", account: "48840", amount: 13973 }
+                ],
+                "Other Revenue": [
+                    { item: "Lease Revenue", account: "43210", amount: 9518 }, 
+                    { item: "Impound Service Charge", account: "46000", amount: 41305 }, 
+                    { item: "Inoperative Vehicle Extension", account: "46310", amount: 151 }, 
+                    { item: "Miscellaneous Revenue", account: "47200", amount: 230579 }, 
+                    { item: "Cost Reimbursements", account: "47610", amount: 61860 }, 
+                    { item: "Cost Recovery - Road Impacts (Rubbish Vehicles)", account: "47612", amount: 22200 },
+                    { item: "Coop Purchasing Program FCCC", account: "47620", amount: 149 },
+                    { item: "Cost Reimbursement Non-CIP Deposit", account: "47630", amount: 27217 }, 
+                    { item: "Recycling Program Revenue", account: "47920", amount: 2000 }, 
+                    { item: "CBC Rebate Program", account: "48970", amount: 23849 }
+                ],
+                "Intergovernmental Revenue": [
+                    { item: "State Grants", account: "45000", amount: 579804 }, 
+                    { item: "C.O.P.S. Prgm Allocation", account: "45500", amount: 195000 }
+                ],
+                "Non-Operating Transfers In": [
+                    { item: "Non-Operating Transfers In", account: "47900", amount: 1734275 }
+                ]
+            };
+            const detailedExpenditures = {
+                "Administration": [{ item: "City Council", account: "10.1000", amount: 409406 }, { item: "City Manager", account: "11.1110", amount: 750351 }, {item: "Information Systems", account: "11.6040", amount: 1340022}, { item: "City Clerk", account: "12.1200", amount: 482556 }, { item: "City Attorney", account: "14.1400", amount: 131828 }, { item: "Innovations and Communications", account: "11.6040", amount: 683124 }],
+                "Public Works": [{ item: "Administration", account: "40.4000", amount: 1166426 }, { item: "Engineering", account: "40.4010", amount: 1214222 }, { item: "Street Maintenance", account: "40.4030", amount: 3819787 }, { item: "Facilities Maintenance", account: "40.4031", amount: 1747331 }, { item: "Park Maintenance", account: "40.4032", amount: 2790975 }, { item: "Fleet Maintenance", account: "40.4033", amount: 619892 }, { item: "Storm Drain", account: "40.4040", amount: 333294 }, { item: "Sanitary Sewer", account: "40.4050", amount: 53000 }],
+                "Parks and Recreation": [{ item: "Administration", account: "80.8000", amount: 1345747 }, { item: "Rec Facilities & Program", account: "80.8100", amount: 1920489 }, { item: "Special Events", account: "80.8102", amount: 1252607 }, { item: "Youth Sports", account: "80.8103", amount: 363340 }, { item: "Aquatics", account: "80.8104", amount: 37362 }, { item: "Contract Instructiors", account: "80.8107", amount: 194961 }, { item: "Teen Services", account: "80.8108", amount: 104560 }, { item: "Rivera Park Batting Cages", account: "80.8109", amount: 44194 }, { item: "Camps", account: "80.8110", amount: 370629 }, { item: "Adaptive Recreation", account: "80.8115", amount: 15935 }, { item: "Summer Lunch Program", account: "80.8116", amount: 1200 }, { item: "Crossing Guards", account: "80.8140", amount: 174389 }, { item: "Senior Services", account: "80.8220", amount: 865680 }, { item: "Media and Communications", account: "80.8230", amount: 1439109 }, { item: "Business and Family Engagement", account: "80.8235", amount: 80715 }, { item: "Trips and Tours", account: "80.8290", amount: 71371 }],
+                "Administrative Services": [{ item: "Finance Administration", account: "20.2000", amount: 519157 }, { item: "Accounting", account: "20.2010", amount: 965596 }, { item: "Budget & Research", account: "20.2015", amount: 413870 }, { item: "Purchasing", account: "20.2020", amount: 273587 }, { item: "Payroll", account: "20.2030", amount: 133185 }, { item: "Utility Billing", account: "20.2050", amount: 132627 }, { item: "Business License", account: "20.2090", amount: 127722 } ],
+                "Community and Economic Development": [{ item: "Administration", account: "30.3000", amount: 1030351 }, { item: "Planning", account: "30.3010", amount: 1289355 }, { item: "Economic Development", account: "30.3020", amount: 1433274 }, { item: "Neighborhood Services", account: "30.3030", amount: 710004 }, { item: "Parking Enforcement", account: "30.3045", amount: 1265106 }, { item: "Emergency Preparedness", account: "30.3046", amount: 500000 }, { item: "Building", account: "30.4020", amount: 1187234 }],
+                "Public Safety": [{ item: "Contracted Services", account: "15-1500", amount: 16159285 }],
+                "Human Resources": [{ item: "Administration", account: "60.6000", amount: 951243 }, { item: "Risk Management", account: "60.6005", amount: 333729 }, { item: "Recruitment", account: "60.6010", amount: 33992 }, { item: "Training", account: "60.6020", amount: 23500 }],
+                "Non-Departmental": [{ item: "Non-Departmental Citywide", account: "90.9000", amount: 5660250 }, { item: "Non-Departmental Citywide - Duplicating-Printing", account: "90.9002", amount: 105397 }, { item: "Non-Departmental - Telecommunications", account: "90.9003", amount: 149291 }, { item: "Non-Departmental - Debt Service", account: "90.9004", amount: 1913200 }, { item: "Non-Departmental - Salex Tax Sharing", account: "90.9005", amount: 211513 }],
+                "Transfers Out": [{ item: "RDA Sales Tax Pledge", account: "---", amount: 1065000 }, { item: "Capital Improvement Program (CIP)", account: "---", amount: 3000000 }]
+            };
+            const historicalData = {
+                labels: ["FY 2016-17", "FY 2017-18", "FY 2018-19", "FY 2019-20", "FY 2020-21", "FY 2021-22", "FY 2022-23", "FY 2023-24", "FY 2024-25"],
+                revenue: [40072031, 45772300, 43034752, 42973300, 39037536, 50740571, 51833428, 59749633, 61197439],
+                expenditures: [38120000, 38950000, null, 42970100, 40307539, 50740571, 50750336, 59749633, 61240769]
+            };
+             const historicalSalesTaxData = {
+                labels: ["FY 09-10", "FY 10-11", "FY 11-12", "FY 12-13", "FY 13-14", "FY 14-15", "FY 15-16", "FY 16-17", "FY 17-18", "FY 18-19", "FY 19-20", "FY 20-21", "FY 21-22", "FY 22-23", "FY 23-24", "FY 24-25"],
+                revenue: [13070000, 13490000, 13590000, 15030000, 16440000, 16370000, 17770000, 18480000, 18850000, 18870000, 18900000, 21000000, 24500000, 24482589, 26136067, 26442593]
+            };
+            const historicalPropertyTaxData = {
+                labels: ["FY 14-15", "FY 15-16", "FY 16-17", "FY 17-18", "FY 18-19", "FY 19-20", "FY 20-21", "FY 21-22", "FY 22-23", "FY 23-24", "FY 24-25"],
+                revenue: [8100000, 9500000, 9300000, 10000000, 10200000, 10900000, 11800000, 12100000, 12300000, 14052850, 14546297]
+            };
+
+
+            // --- DOM Elements ---
+            const mainSections = ['summary', 'revenue', 'expenditures', 'budget-vs-actual', 'fiscalYearGauge'];
+            const detailedRevenueSection = document.getElementById('detailedRevenueSection');
+            const detailedExpendituresSection = document.getElementById('detailedExpendituresSection');
+            const historicalDataSection = document.getElementById('historicalDataSection');
+
+            const backToDashboardBtnRevenue = document.getElementById('backToDashboardBtnRevenue');
+            const backToDashboardBtnExpenditure = document.getElementById('backToDashboardBtnExpenditure');
+            const backToDashboardBtnHistorical = document.getElementById('backToDashboardBtnHistorical');
+            const historicalDataBtn = document.getElementById('historicalDataBtn');
+            const navLinks = document.querySelectorAll('header nav a');
+
+            let historicalChartInstance = null;
+            let salesTaxChartInstance = null;
+            let propertyTaxChartInstance = null;
+
+
+            // --- View Switching Logic ---
+            const showMainDashboard = () => {
+                detailedRevenueSection.classList.add('hidden');
+                detailedExpendituresSection.classList.add('hidden');
+                historicalDataSection.classList.add('hidden');
+                mainSections.forEach(id => document.getElementById(id).classList.remove('hidden'));
+            };
+
+            const showDetailedRevenue = (sourceName) => {
+                mainSections.forEach(id => document.getElementById(id).classList.add('hidden'));
+                detailedRevenueSection.classList.remove('hidden');
+                document.getElementById('detailedRevenueTitle').textContent = `${sourceName} - Detailed Revenue`;
+                const tableBody = document.getElementById('detailedRevenueTableBody');
+                tableBody.innerHTML = '';
+                let totalForSource = 0;
+                const sourceDetails = detailedRevenue[sourceName] || [];
+                sourceDetails.forEach(item => {
+                    const row = tableBody.insertRow();
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    
+                    row.insertCell().textContent = item.item;
+                    row.cells[0].className = 'py-2 px-4';
+
+                    row.insertCell().textContent = item.account;
+                    row.cells[1].className = 'py-2 px-4 text-gray-600';
+
+                    const amountCell = row.insertCell();
+                    amountCell.className = 'py-2 px-4 text-right';
+                    amountCell.textContent = formatCurrency(item.amount);
+
+                    if (item.amount < 0) {
+                        amountCell.classList.add('text-red-600', 'font-semibold');
+                    }
+                    
+                    totalForSource += item.amount;
+                });
+                document.getElementById('detailedRevenueTotalAmount').textContent = formatCurrency(totalForSource);
+            };
+
+            const showDetailedExpenditures = (categoryName) => {
+                mainSections.forEach(id => document.getElementById(id).classList.add('hidden'));
+                detailedExpendituresSection.classList.remove('hidden');
+                document.getElementById('detailedExpenditureTitle').textContent = `${categoryName} - Detailed Expenditures`;
+                const tableBody = document.getElementById('detailedExpendituresTableBody');
+                tableBody.innerHTML = '';
+                let totalForCategory = 0;
+                const categoryDetails = detailedExpenditures[categoryName] || [];
+                categoryDetails.forEach(item => {
+                    const row = tableBody.insertRow();
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+
+                    row.insertCell().textContent = item.item;
+                    row.cells[0].className = 'py-2 px-4';
+
+                    row.insertCell().textContent = item.account;
+                    row.cells[1].className = 'py-2 px-4 text-gray-600';
+
+                    const amountCell = row.insertCell();
+                    amountCell.className = 'py-2 px-4 text-right';
+                    amountCell.textContent = formatCurrency(item.amount);
+
+                    if (item.amount < 0) {
+                        amountCell.classList.add('text-red-600', 'font-semibold');
+                    }
+
+                    totalForCategory += item.amount;
+                });
+                document.getElementById('detailedTotalAmount').textContent = formatCurrency(totalForCategory);
+            };
+
+            const showHistoricalData = () => {
+                mainSections.forEach(id => document.getElementById(id).classList.add('hidden'));
+                detailedRevenueSection.classList.add('hidden');
+                detailedExpendituresSection.classList.add('hidden');
+                historicalDataSection.classList.remove('hidden');
+
+                // Destroy existing charts to prevent duplicates
+                if (historicalChartInstance) {
+                    historicalChartInstance.destroy();
+                }
+                 if (salesTaxChartInstance) {
+                    salesTaxChartInstance.destroy();
+                }
+                if (propertyTaxChartInstance) {
+                    propertyTaxChartInstance.destroy();
+                }
+
+                // Create General Fund Chart
+                const ctx = document.getElementById('historicalChart').getContext('2d');
+                historicalChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: historicalData.labels,
+                        datasets: [
+                            {
+                                label: 'Total Revenue',
+                                data: historicalData.revenue,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                fill: true,
+                                tension: 0.2,
+                                spanGaps: true
+                            },
+                            {
+                                label: 'Total Expenditures',
+                                data: historicalData.expenditures,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                fill: true,
+                                tension: 0.2,
+                                spanGaps: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Revenue vs. Expenditures (2016-2025)',
+                                font: { size: 18, family: 'Inter', weight: '600' },
+                                color: '#2563EB'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => `${context.dataset.label || ''}: ${formatCurrency(context.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: 'Amount ($)', font: { family: 'Inter' } },
+                                ticks: {
+                                    callback: value => formatCurrency(value),
+                                    font: { family: 'Inter' }
+                                }
+                            },
+                            x: { ticks: { font: { family: 'Inter' } } }
+                        }
+                    }
+                });
+
+                // Create Sales Tax Chart
+                const salesTaxCtx = document.getElementById('salesTaxChart').getContext('2d');
+                salesTaxChartInstance = new Chart(salesTaxCtx, {
+                    type: 'line',
+                    data: {
+                        labels: historicalSalesTaxData.labels,
+                        datasets: [{
+                            label: 'Sales Tax Revenue',
+                            data: historicalSalesTaxData.revenue,
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            fill: true,
+                            tension: 0.2,
+                            spanGaps: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Historic Sales Tax Revenue Trends',
+                                font: { size: 18, family: 'Inter', weight: '600' },
+                                color: '#2563EB'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => `${context.dataset.label || ''}: ${formatCurrency(context.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: 'Amount ($)', font: { family: 'Inter' } },
+                                ticks: {
+                                    callback: value => formatCurrency(value),
+                                    font: { family: 'Inter' }
+                                }
+                            },
+                            x: { ticks: { font: { family: 'Inter' } } }
+                        }
+                    }
+                });
+                
+                // Create Property Tax Chart
+                const propertyTaxCtx = document.getElementById('propertyTaxChart').getContext('2d');
+                propertyTaxChartInstance = new Chart(propertyTaxCtx, {
+                    type: 'line',
+                    data: {
+                        labels: historicalPropertyTaxData.labels,
+                        datasets: [{
+                            label: 'Property Tax Revenue',
+                            data: historicalPropertyTaxData.revenue,
+                            borderColor: 'rgba(75, 192, 75, 1)',
+                            backgroundColor: 'rgba(75, 192, 75, 0.2)',
+                            fill: true,
+                            tension: 0.2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Historic Property Tax Revenue Trends',
+                                font: { size: 18, family: 'Inter', weight: '600' },
+                                color: '#2563EB'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => `${context.dataset.label || ''}: ${formatCurrency(context.parsed.y)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: { display: true, text: 'Amount ($)', font: { family: 'Inter' } },
+                                ticks: {
+                                    callback: value => formatCurrency(value),
+                                    font: { family: 'Inter' }
+                                }
+                            },
+                            x: { ticks: { font: { family: 'Inter' } } }
+                        }
+                    }
+                });
+            };
+
+            // --- Event Listeners ---
+            backToDashboardBtnRevenue.addEventListener('click', showMainDashboard);
+            backToDashboardBtnExpenditure.addEventListener('click', showMainDashboard);
+            backToDashboardBtnHistorical.addEventListener('click', showMainDashboard);
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const href = link.getAttribute('href');
+                    if (href === '#historical') {
+                        e.preventDefault();
+                        showHistoricalData();
+                    } else if (href && href.startsWith('#')) {
+                        showMainDashboard();
+                    }
+                });
+            });
+
+
+            // --- Initial Page Load ---
+            const fundBalanceEl = document.getElementById('fundBalance');
+            fundBalanceEl.textContent = formatCurrency(financialData.fundBalance);
+            if (financialData.fundBalance < 0) {
+                 fundBalanceEl.classList.remove('text-blue-700');
+                 fundBalanceEl.classList.add('text-red-700');
+            } else {
+                 fundBalanceEl.classList.remove('text-red-700');
+                 fundBalanceEl.classList.add('text-green-700');
+            }
+
+            document.getElementById('totalRevenue').textContent = formatCurrency(financialData.totalRevenue);
+            document.getElementById('totalExpenditures').textContent = formatCurrency(financialData.totalExpenditures);
+
+            // Fiscal Year Guage Chart
+            const fiscalYearCtx = document.getElementById('fiscalYearChart').getContext('2d');
+            
+            // NOTE: The current date is simulated here to demonstrate the gauge's appearance during the fiscal year.
+            // In a live environment, you would use 'new Date()' to get the actual current date.
+            const simulatedCurrentDate = new Date('2025-07-01');
+            const fiscalYearStartDate = new Date('2025-07-01');
+
+            let monthsPassed = (simulatedCurrentDate.getFullYear() - fiscalYearStartDate.getFullYear()) * 12;
+            monthsPassed -= fiscalYearStartDate.getMonth();
+            monthsPassed += simulatedCurrentDate.getMonth();
+            monthsPassed = monthsPassed <= 0 ? 0 : monthsPassed;
+            
+            // Add partial month progress
+            const daysInMonth = new Date(simulatedCurrentDate.getFullYear(), simulatedCurrentDate.getMonth() + 1, 0).getDate();
+            const progressInCurrentMonth = simulatedCurrentDate.getDate() / daysInMonth;
+            const totalMonthsProgress = Math.min(12, monthsPassed + progressInCurrentMonth);
+
+
+            const fiscalYearProgress = (totalMonthsProgress / 12) * 100;
+            const fiscalYearRemaining = 100 - fiscalYearProgress;
+            
+            new Chart(fiscalYearCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Progress', 'Remaining'],
+                    datasets: [{
+                        data: [fiscalYearProgress, fiscalYearRemaining],
+                        backgroundColor: [
+                            financialData.fundBalance >= 0 ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)',
+                            'rgba(229, 231, 235, 1)'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 4,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    rotation: -90,
+                    circumference: 180,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                },
+                plugins: [{
+                    id: 'centerText',
+                    afterDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        const canvas = chart.canvas;
+                        const centerX = (canvas.width / 2);
+                        const centerY = (canvas.height / 1.1);
+
+                        // Fund Balance Text
+                        ctx.save();
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.font = `700 2rem 'Inter', sans-serif`;
+                        ctx.fillStyle = financialData.fundBalance >= 0 ? '#166534' : '#991B1B';
+                        ctx.fillText(formatCurrency(financialData.fundBalance), centerX, centerY - 15);
+                        
+                        // "Fund Balance" Label
+                        ctx.font = `500 1rem 'Inter', sans-serif`;
+                        ctx.fillStyle = '#4B5563';
+                        ctx.fillText('Current Fund Balance', centerX, centerY + 15);
+                        ctx.restore();
+                    }
+                }]
+            });
+
+
+            // Revenue List & Chart
+            const revenueList = document.getElementById('revenueList');
+            revenueList.innerHTML = '';
+            financialData.revenueSources.forEach(source => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-blue-50 p-3 rounded-lg shadow-sm clickable-list-item';
+                item.dataset.source = source.name;
+                item.innerHTML = `<span class="text-gray-800 font-medium">${source.name}</span><span class="text-blue-700 font-semibold">${formatCurrency(source.amount)} (${source.percentage.toFixed(1)}%)</span>`;
+                item.addEventListener('click', () => showDetailedRevenue(source.name));
+                revenueList.appendChild(item);
+            });
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: financialData.revenueSources.map(s => s.name),
+                    datasets: [{
+                        data: financialData.revenueSources.map(s => s.amount),
+                        backgroundColor: ['#4A90E2', '#7ED321', '#F5A623', '#BD10E0', '#50E3C2', '#9013FE', '#F8E71C', '#D0021B'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Revenue Sources', font: { size: 18, family: 'Inter', weight: '600' }, color: '#2563EB' },
+                        tooltip: { callbacks: { label: c => `${c.label}: ${formatCurrency(c.parsed)} (${financialData.revenueSources[c.dataIndex].percentage.toFixed(1)}%)` } }
+                    },
+                    onClick: (_, elements) => {
+                        if (elements.length > 0) showDetailedRevenue(financialData.revenueSources[elements[0].index].name);
+                    }
+                }
+            });
+
+            // Expenditures List & Chart
+            const expendituresList = document.getElementById('expendituresList');
+            expendituresList.innerHTML = '';
+            financialData.expenditureCategories.forEach(category => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-blue-50 p-3 rounded-lg shadow-sm clickable-list-item';
+                item.dataset.category = category.name;
+                item.innerHTML = `<span class="text-gray-800 font-medium">${category.name}</span><span class="text-blue-700 font-semibold">${formatCurrency(category.amount)} (${category.percentage.toFixed(1)}%)</span>`;
+                item.addEventListener('click', () => showDetailedExpenditures(category.name));
+                expendituresList.appendChild(item);
+            });
+            const expenditureCtx = document.getElementById('expenditureChart').getContext('2d');
+            new Chart(expenditureCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: financialData.expenditureCategories.map(c => c.name),
+                    datasets: [{
+                        data: financialData.expenditureCategories.map(c => c.amount),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#8A2BE2', '#00CED1', '#FF4500', '#20B2AA', '#C71585', '#6A5ACD', '#FFD700'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Expenditure Categories', font: { size: 18, family: 'Inter', weight: '600' }, color: '#2563EB' },
+                        tooltip: { callbacks: { label: c => `${c.label}: ${formatCurrency(c.parsed)} (${financialData.expenditureCategories[c.dataIndex].percentage.toFixed(1)}%)` } }
+                    },
+                    onClick: (_, elements) => {
+                        if (elements.length > 0) showDetailedExpenditures(financialData.expenditureCategories[elements[0].index].name);
+                    }
+                }
+            });
+
+            // Budget vs. Actual List & Chart
+            const budgetActualList = document.getElementById('budgetActualList');
+            budgetActualList.innerHTML = '';
+            financialData.budgetVsActual.forEach(item => {
+                const variance = item.actual - item.budget;
+                const percentageUsed = (item.actual / item.budget) * 100;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'bg-blue-50 p-3 rounded-xl shadow-sm';
+                itemDiv.innerHTML = `<div class="flex justify-between items-start mb-1"><h3 class="text-lg font-semibold text-blue-800 w-2/3">${item.category}</h3><div class="text-right text-xs"><p class="text-gray-700">Actual: <span class="font-medium">${formatCurrency(item.actual)}</span></p><p class="text-gray-700">Budget: <span class="font-medium">${formatCurrency(item.budget)}</span></p><p class="font-semibold ${variance <= 0 ? 'text-green-600' : 'text-red-600'}">Variance: ${formatCurrency(variance)}</p></div></div><div class="progress-bar-container"><div class="progress-bar-fill ${percentageUsed <= 100 ? 'bg-blue-600' : 'bg-red-600'}" style="width: ${Math.min(percentageUsed, 100)}%;"></div></div><p class="text-xs text-gray-500 mt-1 text-right">${percentageUsed.toFixed(1)}% of budget used</p>`;
+                budgetActualList.appendChild(itemDiv);
+            });
+            const budgetActualCtx = document.getElementById('budgetActualChart').getContext('2d');
+            new Chart(budgetActualCtx, {
+                type: 'bar',
+                data: {
+                    labels: financialData.budgetVsActual.map(i => i.category),
+                    datasets: [{ label: 'Budgeted', data: financialData.budgetVsActual.map(i => i.budget), backgroundColor: 'rgba(75, 192, 192, 0.6)', borderWidth: 1, borderRadius: 5 }, { label: 'Actual', data: financialData.budgetVsActual.map(i => i.actual), backgroundColor: 'rgba(255, 99, 132, 0.6)', borderWidth: 1, borderRadius: 5 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { font: { family: 'Inter' } } }, title: { display: true, text: 'Budgeted vs. Actual Expenditures', font: { size: 18, family: 'Inter', weight: '600' }, color: '#2563EB' }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${formatCurrency(c.parsed.y)}` } } },
+                    scales: { 
+                        y: { beginAtZero: true, title: { display: true, text: 'Amount ($)', font: { family: 'Inter' } }, ticks: { callback: v => formatCurrency(v), font: { family: 'Inter' } } }, 
+                        x: { ticks: { font: { family: 'Inter' } } } 
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
