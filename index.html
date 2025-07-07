@@ -130,7 +130,7 @@
 
         <!-- Budget vs. Actual Section -->
         <section id="budget-vs-actual" class="bg-white p-6 rounded-2xl shadow-xl mb-8">
-            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">Budget vs. Actual (FY 2024)</h2>
+            <h2 class="text-2xl md:text-3xl font-bold text-blue-700 mb-6 border-b-2 border-blue-200 pb-3">Budget vs. Actual (FY 2025-2026)</h2>
             <div id="budgetActualList" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Budget vs. Actual items will be loaded here by JavaScript -->
                 <p class="text-gray-600">Loading budget vs. actual data...</p>
@@ -219,7 +219,7 @@
     <footer class="bg-blue-800 text-white p-6 md:p-8 mt-8 rounded-t-3xl">
         <div class="container mx-auto text-center text-sm md:text-base">
             <p>&copy; <span id="currentYear"></span> City of Pico Rivera. Financial Dashboard.</p>
-            <p class="mt-2">Data updated Weekly. For official reports, please visit pico-rivera.org.</p>
+            <p class="mt-2">Data updated weekly. For official reports, please visit pico-rivera.org.</p>
         </div>
     </footer>
 
@@ -243,18 +243,21 @@
 
             // --- Financial Data ---
             const financialData = {
-                totalRevenue: 63415969,
-                totalExpenditures: 63415969,
-                fundBalance: 63415969,
+                totalRevenue: 63554917,
+                totalExpenditures: 63554917,
+                fundBalance: 63554917,
                 revenueSources: [
-                    { name: "Taxes and Franchises", amount: 48972930, percentage: 77.22 },
-                    { name: "Licenses and Permits", amount: 7441208, percentage: 11.73 },
-                    { name: "Fines and Forfeitures", amount: 1369100, percentage: 2.16 },
-                    { name: "Use of Money and Property", amount: 2011373, percentage: 3.17 },
+                    { name: "Sales Tax", amount: 26944275, percentage: 42.4 },
+                    { name: "Property Tax", amount: 15034113, percentage: 23.66 },
+                    { name: "Utility Users Tax", amount: 4262741, percentage: 6.71 },
+                    { name: "Franchise Tax", amount: 1025570, percentage: 1.61 },
+                    { name: "Transient Occupancy Tax (TOT)", amount: 457512, percentage: 0.72 },
+                    { name: "Other Taxes", amount: 1304105, percentage: 2.05 },
+                    { name: "Licenses and Permits", amount: 2441764, percentage: 3.84 },
+                    { name: "Business License Tax", amount: 4999444, percentage: 7.87 },
                     { name: "Charges for Services", amount: 693451, percentage: 1.09 },
-                    { name: "Other Revenue", amount: 418828, percentage: 0.66 },
-                    { name: "Intergovernmental Revenue", amount: 774804, percentage: 1.22 },
-                    { name: "Non-Operating Transfers In", amount: 1734275, percentage: 2.73 }
+                    { name: "All Other Revenue", amount: 4574105, percentage: 7.2 },
+                    { name: "Non-Operating Transfers In", amount: 1817837, percentage : 2.86 }
                 ],
                 expenditureCategories: [
                     { name: "Administration", amount: 3797287, percentage: 5.99 },
@@ -269,16 +272,38 @@
                 ],
                 budgetVsActual: [
                     { category: "Administration", budget: 3797287, actual: 3797287 },
-                    { category: "Public Safety", budget: 15169096, actual: 15017405 },
-                    { category: "Community and Economic Development", budget: 7250185, actual: 7322687 },
-                    { category: "Human Resources", budget: 1307992, actual: 1268752 },
-                    { category: "Parks and Recreation", budget: 7752251, actual: 7907296 },
-                    { category: "Public Works", budget: 11263686, actual: 10700502 },
-                    { category: "Administrative Services", budget: 10468883, actual: 10416538 },
-                    { category: "Non-Departmental", budget: 7009639, actual: 7009639 }
+                    { category: "Public Safety", budget: 16159285, actual: 16159285 },
+                    { category: "Community and Economic Development", budget: 7415324, actual: 7415324 },
+                    { category: "Human Resources", budget: 1342464, actual: 1342464 },
+                    { category: "Parks and Recreation", budget: 8286288, actual: 8286288 },
+                    { category: "Public Works", budget: 11744927, actual: 11744927 },
+                    { category: "Administrative Services", budget: 2565743, actual: 2565743 },
+                    { category: "Non-Departmental", budget: 8039651, actual: 8039651 }
                 ]
             };
             const detailedRevenue = {
+                "Sales Tax": [
+                    { item: "Sales and Use Taxes", account: "40100", amount: 13733107 },
+                    { item: "Sales and Use Taxes - Measure P", account: "40101", amount: 13254498 },
+                    { item: "Sales Tax Revenue Contra Account", account: "40102", amount: -43330 }
+                ],
+                "Property Tax": [
+                    { item: "Property Tax-In Lieu of VLF", account: "44200", amount: 10754346 },
+                    { item: "Property Tax-AB. 1197 Allocation", account: "45400", amount: 4279767 }
+                ],
+                "Utility Users Tax": [
+                    { item: "Utility Users Tax", account: "40700", amount: 4262741 }
+                ],
+                "Franchise Tax": [
+                    { item: "Franchise Tax", account: "40200", amount: 1025570 }
+                ],
+                "Transient Occupancy Tax (TOT)": [
+                    { item: "Transient Occupancy Tax", account: "40500", amount: 457512 }
+                ],
+                "Other Taxes": [
+                    { item: "Property Transfer Tax", account: "40400", amount: 194005 },
+                    { item: "Rubbish Franchise Fee", account: "40800", amount: 1110100 }
+                ],
                 "Taxes and Franchises": [
                     { item: "Sales and Use Taxes", account: "40100", amount: 13733107 },
                     { item: "Sales and Use Taxes - Measure P", account: "40101", amount: 13254498 },
@@ -289,24 +314,18 @@
                     { item: "Utility Users Tax", account: "40700", amount: 4262741 },
                     { item: "Rubbish Franchise Fee", account: "40800", amount: 1110100 },
                     { item: "Property Tax-In Lieu of VLF", account: "44200", amount: 10754346 },
-                    { item: "Property Tax-AB. 1197 Allocation", account: "45400", amount: 4224381 }
+                    { item: "Property Tax-AB. 1197 Allocation", account: "45400", amount: 4279767 }
                 ],
                 "Licenses and Permits": [
                     { item: "Cert. of Occupancy Permits", account: "41000", amount: 22709 }, 
-                    { item: "Business License Tax", account: "41100", amount: 4788000 }, 
-                    { item: "Business License Tax - Delinquent", account: "41101", amount: 850 }, 
-                    { item: "Business License Tax Processing Fee", account: "41105", amount: 100717 }, 
-                    { item: "Discovered Business License Process", account: "41106", amount: -94569 }, 
-                    { item: "Business License Late Fee", account: "41110", amount: 204249 }, 
-                    { item: "Business License Delinquent Fee", account: "41111", amount: 196 },
-                    { item: "SB1186 Fee", account: "41115", amount: 9116 }, 
+                    { item: "SB1186 Fee", account: "41115", amount: 9116 },
                     { item: "Home Occupation - Planning Review", account: "41120", amount: 1000 }, 
                     { item: "Tobacco Retail License", account: "41130", amount: 20800},
                     { item: "Regulatory Permit", account: "41200", amount: 9180 }, 
                     { item: "Building Permits", account: "41300", amount: 750000 }, 
                     { item: "General Plan Maintenance Fee", account: "41315", amount: 13000},
                     { item: "Automated Permit System", account: "41350", amount: 4000 }, 
-                    { item: "Plumbing Permits", account: "41400", amount: 75000 }, 
+                    { item: "Plumbing Permits", account: "41400", amount: 95000 }, 
                     { item: "Electrical Permits", account: "41100", amount: 190000 }, 
                     { item: "Heating Air Cond Permit", account: "41700", amount: 50000 }, 
                     { item: "Dog License", account: "41800", amount: 180000 }, 
@@ -316,16 +335,13 @@
                     { item: "Zoning and Planning Fees", account: "46100", amount: 175000 }, 
                     { item: "Residential Parking Permit", account: "46350", amount: 5755 }
                 ],
-                "Fines and Forfeitures": [
-                    { item: "Administrative Citation", account: "42050", amount: 85000 }, 
-                    { item: "Vehicle Code Fines", account: "42100", amount: 75000 }, 
-                    { item: "Other Court Fines", account: "42200", amount: 1200000 },
-                    { item: "Fines & Violations - Fireworks", account: "42250", amount: 9100}
-                ],
-                "Use of Money and Property": [
-                    { item: "Interest Income", account: "43100", amount: 1938900 }, 
-                    { item: "Investment Fair Value Gain (Loss)", account: "43116", amount: 63200},
-                    { item: "Rents and Concessions", account: "43200", amount: 9273 }
+                "Business License Tax": [
+                    { item: "Business License Tax", account: "41100", amount: 4788000 }, 
+                    { item: "Business License Tax - Delinquent", account: "41101", amount: 850 }, 
+                    { item: "Business License Tax Processing Fee", account: "41105", amount: 100717 }, 
+                    { item: "Discovered Business License Process", account: "41106", amount: -94569 }, 
+                    { item: "Business License Late Fee", account: "41110", amount: 204249 }, 
+                    { item: "Business License Delinquent Fee", account: "41111", amount: 196 }
                 ],
                 "Charges for Services": [
                     { item: "Record Retention Surcharge", account: "42010", amount: 3435 },
@@ -348,7 +364,14 @@
                     { item: "Training Surcharge", account: "48836", amount: 13253 },
                     { item: "Current Service Charges", account: "48840", amount: 13973 }
                 ],
-                "Other Revenue": [
+                "All Other Revenue": [
+                    { item: "Administrative Citation", account: "42050", amount: 85000 }, 
+                    { item: "Vehicle Code Fines", account: "42100", amount: 75000 }, 
+                    { item: "Other Court Fines", account: "42200", amount: 1200000 },
+                    { item: "Fines & Violations - Fireworks", account: "42250", amount: 9100},
+                    { item: "Interest Income", account: "43100", amount: 1938900 }, 
+                    { item: "Investment Fair Value Gain (Loss)", account: "43116", amount: 63200},
+                    { item: "Rents and Concessions", account: "43200", amount: 9273 },
                     { item: "Lease Revenue", account: "43210", amount: 9518 }, 
                     { item: "Impound Service Charge", account: "46000", amount: 41305 }, 
                     { item: "Inoperative Vehicle Extension", account: "46310", amount: 151 }, 
@@ -358,20 +381,51 @@
                     { item: "Coop Purchasing Program FCCC", account: "47620", amount: 149 },
                     { item: "Cost Reimbursement Non-CIP Deposit", account: "47630", amount: 27217 }, 
                     { item: "Recycling Program Revenue", account: "47920", amount: 2000 }, 
-                    { item: "CBC Rebate Program", account: "48970", amount: 23849 }
-                ],
-                "Intergovernmental Revenue": [
+                    { item: "CBC Rebate Program", account: "48970", amount: 23849 },
                     { item: "State Grants", account: "45000", amount: 579804 }, 
                     { item: "C.O.P.S. Prgm Allocation", account: "45500", amount: 195000 }
                 ],
                 "Non-Operating Transfers In": [
-                    { item: "Non-Operating Transfers In", account: "47900", amount: 1734275 }
+                    { item: "Non-Operating Transfers In", account: "47900", amount: 1817837 }
                 ]
             };
             const detailedExpenditures = {
-                "Administration": [{ item: "City Council", account: "10.1000", amount: 409406 }, { item: "City Manager", account: "11.1110", amount: 750351 }, {item: "Information Systems", account: "11.6040", amount: 1340022}, { item: "City Clerk", account: "12.1200", amount: 482556 }, { item: "City Attorney", account: "14.1400", amount: 131828 }, { item: "Innovations and Communications", account: "11.6040", amount: 683124 }],
-                "Public Works": [{ item: "Administration", account: "40.4000", amount: 1166426 }, { item: "Engineering", account: "40.4010", amount: 1214222 }, { item: "Street Maintenance", account: "40.4030", amount: 3819787 }, { item: "Facilities Maintenance", account: "40.4031", amount: 1747331 }, { item: "Park Maintenance", account: "40.4032", amount: 2790975 }, { item: "Fleet Maintenance", account: "40.4033", amount: 619892 }, { item: "Storm Drain", account: "40.4040", amount: 333294 }, { item: "Sanitary Sewer", account: "40.4050", amount: 53000 }],
-                "Parks and Recreation": [{ item: "Administration", account: "80.8000", amount: 1345747 }, { item: "Rec Facilities & Program", account: "80.8100", amount: 1920489 }, { item: "Special Events", account: "80.8102", amount: 1252607 }, { item: "Youth Sports", account: "80.8103", amount: 363340 }, { item: "Aquatics", account: "80.8104", amount: 37362 }, { item: "Contract Instructiors", account: "80.8107", amount: 194961 }, { item: "Teen Services", account: "80.8108", amount: 104560 }, { item: "Rivera Park Batting Cages", account: "80.8109", amount: 44194 }, { item: "Camps", account: "80.8110", amount: 370629 }, { item: "Adaptive Recreation", account: "80.8115", amount: 15935 }, { item: "Summer Lunch Program", account: "80.8116", amount: 1200 }, { item: "Crossing Guards", account: "80.8140", amount: 174389 }, { item: "Senior Services", account: "80.8220", amount: 865680 }, { item: "Media and Communications", account: "80.8230", amount: 1439109 }, { item: "Business and Family Engagement", account: "80.8235", amount: 80715 }, { item: "Trips and Tours", account: "80.8290", amount: 71371 }],
+                "Administration": [
+                    { item: "City Council", account: "10.1000", amount: 409406 },
+                    { item: "City Manager", account: "11.1110", amount: 750351 },
+                    {item: "Information Systems", account: "11.6040", amount: 1340022}, 
+                    { item: "City Clerk", account: "12.1200", amount: 482556 }, 
+                    { item: "City Attorney", account: "14.1400", amount: 131828 }, 
+                    { item: "Innovations and Communications", account: "11.6040", amount: 683124 }
+                ],
+                "Public Works": [
+                    { item: "Administration", account: "40.4000", amount: 1166426 }, 
+                    { item: "Engineering", account: "40.4010", amount: 1214222 }, 
+                    { item: "Street Maintenance", account: "40.4030", amount: 3819787 }, 
+                    { item: "Facilities Maintenance", account: "40.4031", amount: 1747331 },
+                    { item: "Park Maintenance", account: "40.4032", amount: 2790975 }, 
+                    { item: "Fleet Maintenance", account: "40.4033", amount: 619892 }, 
+                    { item: "Storm Drain", account: "40.4040", amount: 333294 }, 
+                    { item: "Sanitary Sewer", account: "40.4050", amount: 53000 }
+                 ],
+                "Parks and Recreation": [
+                    { item: "Administration", account: "80.8000", amount: 1345747 }, 
+                    { item: "Rec Facilities & Program", account: "80.8100", amount: 1920489 }, 
+                    { item: "Special Events", account: "80.8102", amount: 1252607 }, 
+                    { item: "Youth Sports", account: "80.8103", amount: 363340 }, 
+                    { item: "Aquatics", account: "80.8104", amount: 37362 }, 
+                    { item: "Contract Instructiors", account: "80.8107", amount: 194961 }, 
+                    { item: "Teen Services", account: "80.8108", amount: 104560 }, 
+                    { item: "Rivera Park Batting Cages", account: "80.8109", amount: 44194 }, 
+                    { item: "Camps", account: "80.8110", amount: 370629 }, 
+                    { item: "Adaptive Recreation", account: "80.8115", amount: 15935 }, 
+                    { item: "Summer Lunch Program", account: "80.8116", amount: 1200 }, 
+                    { item: "Crossing Guards", account: "80.8140", amount: 174389 }, 
+                    { item: "Senior Services", account: "80.8220", amount: 865680 }, 
+                    { item: "Media and Communications", account: "80.8230", amount: 1439109 }, 
+                    { item: "Business and Family Engagement", account: "80.8235", amount: 80715 }, 
+                    { item: "Trips and Tours", account: "80.8290", amount: 71371 }
+                ],
                 "Administrative Services": [{ item: "Finance Administration", account: "20.2000", amount: 519157 }, { item: "Accounting", account: "20.2010", amount: 965596 }, { item: "Budget & Research", account: "20.2015", amount: 413870 }, { item: "Purchasing", account: "20.2020", amount: 273587 }, { item: "Payroll", account: "20.2030", amount: 133185 }, { item: "Utility Billing", account: "20.2050", amount: 132627 }, { item: "Business License", account: "20.2090", amount: 127722 } ],
                 "Community and Economic Development": [{ item: "Administration", account: "30.3000", amount: 1030351 }, { item: "Planning", account: "30.3010", amount: 1289355 }, { item: "Economic Development", account: "30.3020", amount: 1433274 }, { item: "Neighborhood Services", account: "30.3030", amount: 710004 }, { item: "Parking Enforcement", account: "30.3045", amount: 1265106 }, { item: "Emergency Preparedness", account: "30.3046", amount: 500000 }, { item: "Building", account: "30.4020", amount: 1187234 }],
                 "Public Safety": [{ item: "Contracted Services", account: "15-1500", amount: 16159285 }],
@@ -381,16 +435,16 @@
             };
             const historicalData = {
                 labels: ["FY 2016-17", "FY 2017-18", "FY 2018-19", "FY 2019-20", "FY 2020-21", "FY 2021-22", "FY 2022-23", "FY 2023-24", "FY 2024-25"],
-                revenue: [40072031, 45772300, 43034752, 42973300, 39037536, 50740571, 51833428, 59749633, 61197439],
-                expenditures: [38120000, 38950000, null, 42970100, 40307539, 50740571, 50750336, 59749633, 61240769]
+                revenue: [40072031, 45772300, 43034752, 42973300, 39037536, 49370373, 56874931, 59674323, 62439714],
+                expenditures: [38120000, 38950000, 39000000, 42970100, 40307539, 50287889, 51969671, 58352665, 62359074]
             };
              const historicalSalesTaxData = {
                 labels: ["FY 09-10", "FY 10-11", "FY 11-12", "FY 12-13", "FY 13-14", "FY 14-15", "FY 15-16", "FY 16-17", "FY 17-18", "FY 18-19", "FY 19-20", "FY 20-21", "FY 21-22", "FY 22-23", "FY 23-24", "FY 24-25"],
-                revenue: [13070000, 13490000, 13590000, 15030000, 16440000, 16370000, 17770000, 18480000, 18850000, 18870000, 18900000, 21000000, 24500000, 24482589, 26136067, 26442593]
+                revenue: [13070000, 13490000, 13590000, 15030000, 16435053, 16368367, 17766538, 17637948, 17575729, 19468221, 19364271, 21325436, 24551320, 25116980, 26136067, 26442593]
             };
             const historicalPropertyTaxData = {
                 labels: ["FY 14-15", "FY 15-16", "FY 16-17", "FY 17-18", "FY 18-19", "FY 19-20", "FY 20-21", "FY 21-22", "FY 22-23", "FY 23-24", "FY 24-25"],
-                revenue: [8100000, 9500000, 9300000, 10000000, 10200000, 10900000, 11800000, 12100000, 12300000, 14052850, 14546297]
+                revenue: [ 9611244, 10049454, 10591691,  11173640, 11734058, 12209094, 12954453, 13758151, 14953118, 14052850, 14546297]
             };
 
 
