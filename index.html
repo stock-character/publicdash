@@ -736,19 +736,18 @@
             // Fiscal Year Guage Chart
             const fiscalYearCtx = document.getElementById('fiscalYearChart').getContext('2d');
             
-            // NOTE: The current date is simulated here to demonstrate the gauge's appearance during the fiscal year.
-            // In a live environment, you would use 'new Date()' to get the actual current date.
-            const simulatedCurrentDate = new Date('2025-07-01');
+            // Use the actual current date to calculate fiscal year progress.
+            const currentDate = new Date();
             const fiscalYearStartDate = new Date('2025-07-01');
 
-            let monthsPassed = (simulatedCurrentDate.getFullYear() - fiscalYearStartDate.getFullYear()) * 12;
+            let monthsPassed = (currentDate.getFullYear() - fiscalYearStartDate.getFullYear()) * 12;
             monthsPassed -= fiscalYearStartDate.getMonth();
-            monthsPassed += simulatedCurrentDate.getMonth();
+            monthsPassed += currentDate.getMonth();
             monthsPassed = monthsPassed <= 0 ? 0 : monthsPassed;
             
             // Add partial month progress
-            const daysInMonth = new Date(simulatedCurrentDate.getFullYear(), simulatedCurrentDate.getMonth() + 1, 0).getDate();
-            const progressInCurrentMonth = simulatedCurrentDate.getDate() / daysInMonth;
+            const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            const progressInCurrentMonth = currentDate.getDate() / daysInMonth;
             const totalMonthsProgress = Math.min(12, monthsPassed + progressInCurrentMonth);
 
 
